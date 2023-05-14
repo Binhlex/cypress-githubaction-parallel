@@ -1,0 +1,110 @@
+name: Create TT Orders
+on:
+  push:
+    branches:
+      - createOrderTT
+env:
+  CYPRESS_CACHE_FOLDER: cypress/cache
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    container:
+      image: cypress/browsers:node16.17.1-chrome106-ff105-edge
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3.1.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v3.5.1
+        with:
+          node-version: 16
+
+      - name: Install npm 6
+        run: npm i -g npm@6 --registry=https://registry.npmjs.org
+
+      - name: Cache Node Modules
+        id: cache-node-modules
+        uses: actions/cache@v3.0.11
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('package-lock.json') }}
+
+      - name: Cache Cypress Binary
+        id: cache-cypress-binary
+        uses: actions/cache@v3.0.11
+        with:
+          path: cypress/cache
+          key: cypress-binary-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm install
+
+      - name: Set-up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+  parallel_test:
+    runs-on: ubuntu-latest
+    needs: install
+    container:
+      image: cypress/browsers:node16.17.1-chrome106-ff105-edge
+      options: --user 1001
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [
+            order-creation1,
+            order-creation2,
+            order-creation3,
+            order-creation4,
+            order-creation5,
+            order-creation6,
+            order-creation7,
+            order-creation8,
+            order-creation9,
+            order-creation10,
+            order-creation11,
+            order-creation12,
+            order-creation13,
+            order-creation14,
+            order-creation15,
+            order-creation16,
+            order-creation17,
+            order-creation18,
+            order-creation19,
+            order-creation20,
+            order-creation21,
+            order-creation22,
+            order-creation23,
+            order-creation24,
+            order-creation25,
+            order-creation26,
+            order-creation27,
+            order-creation28,
+            order-creation29,
+            order-creation30,
+            # order-creation31,
+            # order-creation32,
+            # order-creation33,
+            # order-creation34,
+            # order-creation35,
+            # order-creation36,
+          ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3.1.0
+
+      - name: Write the cypress.env.json file
+        run: |
+          echo '${{ secrets.CYPRESS_ENVIRONMENT }}' > cypress.env.json
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v4
+        continue-on-error: true
+        with:
+          spec: cypress/e2e/ui/tiktok-perf/${{ matrix.group }}.feature
+          # browser: chrome
